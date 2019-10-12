@@ -47,3 +47,45 @@ NODE *alloc_node(void){
     return p;
 }
 
+int keyequal(KEY a, KEY b){
+    return a == b;
+}
+
+int keylt(KEY a, KEY b){
+    return a<b;
+}
+
+int locate_subtree(NODE *p, KEY key){
+    int i;
+    for(i=p->nchilds-1; i>0; i--)
+        if(key >= p->low[i])
+            return i;
+    return 0;
+}
+
+NODE *serach(KEY key){
+    NODE *p;
+    int i;
+    if(root==NULL)
+        return NULL;
+    else{
+        p = root;
+        while(p->nodekind == INTERNEL){
+            i = locate_subtree(p, key);
+            p = p->child[i];
+        }
+        if (key == p->leaf_key)
+            return p;
+        else
+            return NULL;
+    }
+}
+
+NODE *insert_aux(NODE **pnode, KEY key, NODE **newnode, KEY *lowest){
+    NODE *node;
+    *newnode = NULL;
+    node = *pnode;
+    if(node->nodekind == LEAF){
+        
+    }
+}
