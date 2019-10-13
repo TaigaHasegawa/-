@@ -238,5 +238,106 @@ int merge_nodes(NODE *p, int x){
 #define NEED_REORG 3
 
 int delete_aux(NODE *node, KEY key, int *result){
-    
+    result = OK;
+    if(node->nodekind == LEAF){
+        if(keyequal(node->leaf_key, key)){
+            *result = REMOVED;
+            free(node);
+            return 1;
+        }else{
+            return 0;
+        }
+    }else{
+        int pos;
+        int condition;
+        int retv;
+        int sub;
+        int joined;
+        int i;
+        pos = locate_subtree(node, key);
+        retv = delete_aux(node->child[pos], key, &condition);
+        if(condition == OK)
+            return retv;
+        if(condition == NEED_REORG){
+            sub = (pos == 0) ? 0: pos-1;
+            joined = merge_nodes(node, sub);
+            if(joined)
+                pos = sub+1;
+        }
+        if(condition == REMOVED || joined){
+            for(i = pos; i<node->nchilds-1; i++){
+                node->child[i] = node->child[i+1];
+                node->low[i] = node->low[i+1];
+            }
+            if(--node->nchilds < HALF_CHILD)
+                *result = NEED_REORG;
+        }
+        return retv;
+    }
+}
+
+int delete(KEY key){
+    int retv, result;
+    NODE *p;
+    if(root == NULL)
+        return 0;
+    else{
+        retv = delete_aux(root, key, &result);
+        if(result == REMOVED)
+            root = NULL;
+        else if(result == NEED_REORG && root->nchilds == 1){
+            p = root;
+            root = root->child[0];
+            free(p);
+        }
+        return retv;
+    }
+}
+
+printtree(NODE *p){
+    int i;
+    if(p->nodekind == LEAF){
+        printf("%04x leaf val=%d\n",p ,p->leaf_key);
+    }else{
+        printf("%04x %02d [%04x] %d[%04x] %d[%04x] %d[%04x] %d[%04x]\n", p, p->nchilds, p->child[0], p->low[1], p->child[1], p->low[2], p->child[2], p->low[3], p->child[3], p->low[4], p->child[4]);
+        for (i=0; i<p->nchilds; i++)
+            printtree(p->child[i]);
+    }
+}
+
+main(){
+    /*static int data[]={10,20,30,40,50};*/
+    static int data[]={13,5,2,7,6,21,15};
+    int i,x;
+    char str[100];
+    for(i = 0; i < sizeof(data)/sizeof(data[0]); i++)
+        insert(data[i]);
+    printf("+n : nを挿入する\n-n : nを削除する\nn : nを探索する˜\n");
+    printtree(root);
+    printf("\n>");
+    while(gets(str)!=NULL){
+        x = abs(atoi(str));
+        switch(str[0]){
+            case '+':
+                if(insert(x)!=NULL)
+                    printf("%d inserted.\n", x);
+                else
+                    printf("%d not inserted.\n", x);
+                break;
+            case '-':
+                if(delete(x))
+                    printf("%d deleted.\n", x);
+                else
+                    printf("%d not deleted.\n",x);
+                break;
+            default:
+                if(search(x)!=NULL)
+                    printf("%d found.\n", x);
+                else
+                    printf("%d not found.\n", x);
+                break;
+        }
+        printtree(root);
+        printf("\n>");
+    }
 }
