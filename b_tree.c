@@ -63,7 +63,7 @@ int locate_subtree(NODE *p, KEY key){
     return 0;
 }
 
-NODE *serach(KEY key){
+NODE *search(KEY key){
     NODE *p;
     int i;
     if(root==NULL)
