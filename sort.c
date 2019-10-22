@@ -177,11 +177,11 @@ struct node *merge_sort_list(struct node *x){
 
 
 #define MAX_HEAP 10000
-int n = 1000;
+int n = 0;
 int a[MAX_HEAP+1];
 
 
-void downheap(){
+/*void downheap(){
     int i, j;
     int val;
     val = a[1];
@@ -191,6 +191,22 @@ void downheap(){
         if(j+1 <= n && a[j]>a[j+1])
             j++;
         if(val<=a[j])
+            break;
+        a[i] = a[j];
+        i = j;
+    }
+    a[i] = val;
+}*/
+
+void downheap(int from, int to){
+    int i, j;
+    int val;
+    i = from;
+    while(i <= to/2){
+        j = i*2;
+        if(j+1 <=to && a[j] > a[j+1])
+            j++;
+        if(val <= a[j])
             break;
         a[i] = a[j];
         i = j;
@@ -227,4 +243,80 @@ void insert(int elem){
     }
     a[++n] = elem;
     upheap(n);
+}
+
+sort(int a[], int n){
+    int i;
+    for(i=0; i < n; i++)
+        insert(a[i]);
+    for(i = 0; i<n; i++)
+        a[i] = delete_min();
+}
+
+void heapsort(){
+    int i;
+    int tmp;
+    for(i = n/2; i>= 1; i--)
+        downheap(i, n);
+    for(i = n; i>=2; i--){
+        tmp = a[1];
+        a[1] = a[i];
+        a[i] = tmp;
+        downheap(1, i-1);
+    }
+}
+
+typedef struct {
+    int key;
+    int other;
+} DATA;
+
+#define M 100
+
+DATA bin[M+1];
+
+void bin_sort(DATA a[], int n){
+    int i, j;
+    for(i = 0; i <= M; i++)
+        bin[i].key = -1;
+    for(i = 0, i < n; i++)
+        bin[a[i].key] = a[i];
+    j = 0;
+    for(i = 0; i <= M; i++)
+        if(bin[i].key != -1)
+            a[j++] = bin[i];
+}
+
+int count [M+1];
+
+void dist_count_sort(DATA a[], DATA b[], int n){
+    int i;
+    for(i = 0; i <= M; i++)
+        count[i] = 0;
+    for(i = 0; i < n; i++)
+        count[a[i].key]++;
+    for(i = 0; i < M; i++)
+        count[i+1] += count[i];
+    for(i = n-1; i>= 0; i--)
+        b[--count[a[i].key]] = a[i];
+}
+
+#define M 15
+#define MASK 0x0f
+int count [M+1];
+
+void radix_sort(unsigned short a[], unsigned short b[], int n){
+    int i, bit;
+    for(bit = 0; bit < 16; bit += 4){
+        for(i = 0; i<=M; i++)
+            count[i] = 0;
+        for(i = 0; i<n; i++)
+            count[(a[i]>>bit) & MASK]++;
+        for(i = 0; i < M; i++)
+            count[i+1] += count[i];
+        for(i = n-1; i>0; i--)
+            b[--count[(a[i]>>bit) & MASK]] = a[i];
+        for(i = 0; i<n; i++)
+            a[i] = b[i];
+    }
 }
